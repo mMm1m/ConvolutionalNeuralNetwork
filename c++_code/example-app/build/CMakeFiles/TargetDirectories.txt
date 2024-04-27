@@ -1,3 +1,0 @@
-/home/max/example-app/build/CMakeFiles/example-app.dir
-/home/max/example-app/build/CMakeFiles/edit_cache.dir
-/home/max/example-app/build/CMakeFiles/rebuild_cache.dir

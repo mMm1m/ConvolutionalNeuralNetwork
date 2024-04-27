@@ -1,3 +1,0 @@
-/home/max/example-app/cmake-build-debug/CMakeFiles/example-app.dir
-/home/max/example-app/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/max/example-app/cmake-build-debug/CMakeFiles/rebuild_cache.dir
