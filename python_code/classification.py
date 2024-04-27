@@ -41,7 +41,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Загрузка предварительно обученной модели ResNet-18
 model_ft = models.resnet18(weights='IMAGENET1K_V1')
 num_ftrs = model_ft.fc.in_features
-model_ft.fc = nn.Linear(num_ftrs, 2)
+model_ft.fc = nn.Linear(num_ftrs, 525)
 
 model_ft = model_ft.to(device)
 
@@ -125,18 +125,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs):
 
 
 # Обучение и оценка модели
-model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=5)
+model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
 
-# # Оценка модели на валидационных данных
-# correct = 0
-# total = 0
-# with torch.no_grad():
-#     for inputs, labels in dataloaders['valid']:
-#         inputs = inputs.to(device)
-#         labels = labels.to(device)
-#         outputs = model_ft(inputs)
-#         _, predicted = torch.max(outputs, 1)
-#         total += labels.size(0)
-#         correct += (predicted == labels).sum().item()
-#
-# print('Accuracy of the network on the validation images: %d %%' % (100 * correct / total))
+
