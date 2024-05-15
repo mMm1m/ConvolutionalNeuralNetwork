@@ -1,3 +1,0 @@
-/home/max/Документы/CNN/c++_code/image_classification/cmake-build-debug/CMakeFiles/image_classification.dir
-/home/max/Документы/CNN/c++_code/image_classification/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/max/Документы/CNN/c++_code/image_classification/cmake-build-debug/CMakeFiles/rebuild_cache.dir
