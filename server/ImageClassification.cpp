@@ -1,10 +1,6 @@
-#include <iostream>
-#include <torch/torch.h>
-#include <opencv2/opencv.hpp>
+#include "ImageClassificaion.h"
 
-class ImageClassifier {
-  public:
-   ImageClassifier(const std::string& modelWeightsPath, const int& num_classes) {
+   ImageClassifier::ImageClassifier(const std::string& modelWeightsPath, const int& num_classes) : device("CUDA") {
      std::string str = "class_";
      // Присваиваем имена классам
      for(int i = 0; i < num_classes; ++i) class_names.push_back(str + std::to_string(num_classes));
@@ -28,7 +24,7 @@ class ImageClassifier {
      }
    }
 
-   std::string predict(const std::string& imagePath) {
+   std::string ImageClassifier::predict(const std::string& imagePath) {
      // Загружаем изображение с помощью OpenCV
      cv::Mat image = cv::imread(imagePath);
      torch::Tensor tensor = vision::transforms::functional::MatToTensor(image);
@@ -55,18 +51,9 @@ class ImageClassifier {
      return predictedClass;
    }
 
-  private:
-   torch::Device device;
-   torch::nn::Sequential model;
-   std::vector<std::string> class_names;
-};
-
 int main() {
-  // Создаем экземпляр класса ImageClassifier, передав путь к весам модели
-  // в нашем случае 525 классов;
-  int num_classes = 525;
-  ImageClassifier classifier("path/to/model/weights", num_classes);
 
+  ImageClassifier classifier("path/to/model/weights", num_classes);
   // Вызываем метод predict, передав путь к тестовому изображению
   std::string predictedClass = classifier.predict("path/to/image");
 
