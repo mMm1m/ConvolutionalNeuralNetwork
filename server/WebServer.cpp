@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -87,13 +87,13 @@ typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
    void HTTPServer::start_accept() {
      socket_ptr socket(new ip::tcp::socket(io_service_));
      acceptor_.async_accept(*socket,
-                            boost::bind(&HTTPServer::handle_accept, this, socket, _1));
+                            [this, socket](auto && PH1) { handle_accept(socket, std::forward<decltype(PH1)>(PH1)); });
    }
 
    void HTTPServer::handle_accept(socket_ptr socket, const boost::system::error_code& error) {
      if (!error) {
        if(this->pool.getQueueSize() == this->pool.getSize()) write(*socket,buffer("HTTP/1.1 400 Bad Request\r\n\r\n"));
-       else pool.enqueue(boost::bind(&HTTPServer::handle_request, this, socket));
+       else pool.enqueue([this, socket] { handle_request(socket); });
      }
      start_accept();
    }
@@ -104,15 +104,16 @@ typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
        char data[1024];
        size_t length = socket->read_some(buffer(data));
        std::string request(data, length);
+       std::cout << request;
        ImageClassifier classifier("path/to/model/weights", num_classes);
 
        // get image from our device
        // Вызываем метод predict, передав путь к тестовому изображению
-       //std::string predictedClass = classifier.predict("path/to/image");
        std::string predictedClass = classifier.predict(request);
 
        // get Logic and avoid HTTP/0.9 while curl call
        std::string response = getLogic(predictedClass);
+       std::cout << response;
        write(*socket, buffer(response));
      } catch (std::exception& e) {
        std::cerr << "Exception in thread: " << e.what() << '\n';

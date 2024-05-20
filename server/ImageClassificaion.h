@@ -1,5 +1,5 @@
 #include <iostream>
-#include <torch/torch.h>
+//#include <torch/torch.h>
 
 #ifndef IMAGE_CLASSIFICATION_IMAGECLASSIFICAION_H
 #define IMAGE_CLASSIFICATION_IMAGECLASSIFICAION_H
@@ -10,10 +10,10 @@ class ImageClassifier {
 
    std::string predict(const std::string& imagePath);
 
-  private:
-   torch::Device device;
-   torch::nn::Sequential model;
-   std::vector<std::string> class_names;
+  //private:
+   //torch::Device device;
+   //torch::nn::Sequential model;
+   //std::vector<std::string> class_names;
 };
 
 #endif //IMAGE_CLASSIFICATION_IMAGECLASSIFICAION_H

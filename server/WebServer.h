@@ -4,7 +4,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

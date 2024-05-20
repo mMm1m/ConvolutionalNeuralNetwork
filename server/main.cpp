@@ -7,6 +7,7 @@ int main()
   // в нашем случае 525 классов;
   try
   {
+    std::cout << "Test" << '\n';
     io_service service;
     HTTPServer server(service , 8001);
     service.run();
