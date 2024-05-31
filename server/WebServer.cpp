@@ -15,12 +15,12 @@
 #include <mutex>
 #include <condition_variable>
 #include "WebServer.h"
-#include "ImageClassificaion.h"
+#include "ImageClassification.h"
 
 using namespace boost::asio;
 typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
 
-   ThreadPool::ThreadPool(size_t num_threads) : boost::asio::thread_pool(num_threads) , num_threads(4)
+   ThreadPool::ThreadPool(size_t num_threads) : boost::asio::thread_pool(num_threads) , num_threads(2), active_tasks(0)
    {
      for (size_t i = 0; i < num_threads; ++i) {
        threads_.emplace_back([this] {
@@ -34,11 +34,24 @@ typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
              }
              task = std::move(tasks_.front());
              tasks_.pop();
+             active_tasks++;
+             sleep(5);
            }
            task();
+           {
+             std::lock_guard<std::mutex> lock(mutex_);
+             --active_tasks;
+             condition_.notify_all();
+           }
+
          }
        });
      }
+   }
+
+   void ThreadPool::sleep(int duration)
+   {
+     std::this_thread::sleep_for(std::chrono::seconds (duration));
    }
 
    template<class F>
@@ -71,8 +84,14 @@ typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
      return this->num_threads;
    }
 
+   size_t ThreadPool::get_active_tasks()
+   {
+     std::lock_guard<std::mutex> lock(mutex_);
+     return active_tasks;
+   }
+
    HTTPServer::HTTPServer(io_service& io_service, short port)
-     : acceptor_(io_service, ip::tcp::endpoint(ip::tcp::v4(), port)), io_service_(io_service), pool(4)
+     : acceptor_(io_service, ip::tcp::endpoint(ip::tcp::v4(), port)), io_service_(io_service), pool(2)
    {
      start_accept();
    }
@@ -90,15 +109,19 @@ typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
                             [this, socket](auto && PH1) { handle_accept(socket, std::forward<decltype(PH1)>(PH1)); });
    }
 
-   void HTTPServer::handle_accept(socket_ptr socket, const boost::system::error_code& error) {
+   void HTTPServer::handle_accept(const socket_ptr socket, const boost::system::error_code& error) {
      if (!error) {
-       if(this->pool.getQueueSize() == this->pool.getSize()) write(*socket,buffer("HTTP/1.1 400 Bad Request\r\n\r\n"));
+       if(this->pool.get_active_tasks() >= this->pool.getSize()) {
+         //write(*socket,buffer("HTTP/1.1 400 Bad Request\r\n\r\n"));
+         write(*socket, boost::asio::buffer("HTTP/1.1 503 Service Unavailable\r\n\r\n"));
+         std::cerr << "Error: All threads are busy. Returning 503 Service Unavailable.\n";
+       }
        else pool.enqueue([this, socket] { handle_request(socket); });
      }
      start_accept();
    }
 
-   void HTTPServer::handle_request(socket_ptr socket) {
+   void HTTPServer::handle_request(const socket_ptr socket) {
      const int num_classes = 525;
      try {
        char data[1024];
@@ -112,7 +135,7 @@ typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
        std::string predictedClass = classifier.predict(request);
 
        // get Logic and avoid HTTP/0.9 while curl call
-       std::string response = getLogic(predictedClass);
+       std::string response = getLogic(request);
        std::cout << response;
        write(*socket, buffer(response));
      } catch (std::exception& e) {

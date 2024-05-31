@@ -34,6 +34,10 @@ class ThreadPool : boost::asio::thread_pool {
 
    int getSize();
 
+   size_t get_active_tasks();
+
+   void sleep(int duration);
+
   private:
    std::vector<std::thread> threads_;
    std::queue<std::function<void()>> tasks_;
@@ -41,6 +45,7 @@ class ThreadPool : boost::asio::thread_pool {
    std::condition_variable condition_;
    bool stop_ = false;
    int num_threads;
+   size_t active_tasks;
 };
 
 class HTTPServer {
